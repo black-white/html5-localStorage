@@ -1,0 +1,140 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="robots" content="all" />
+	<meta name="keywords" content="" />
+	<meta name="description" content="" />
+	<title>html5-localStorage留言板</title>
+	<style type="text/css">
+		ul,li,h1,h2,body,div{margin:0;padding:0;}
+		li{list-style:none;}
+		body,textarea{font:12px/1.5 arial;}
+		.rad2{border-radius:2px;-moz-border-radius:2px;-webkit-border-radius:2px;-o-border-radius:2px;}
+		.wrap{width:900px;margin:10px auto;}
+		textarea{position:relative;padding:5px;width:888px;height:200px;border:1px solid #cecece;}
+		h1{padding:3px;margin-bottom:10px;height:40px;line-height:40px;background-color:rgba(69,69,69,0.5);font-size:16px;color:#fff;}
+		h2{padding:2px;margin-bottom:10px;height:30px;line-height:30px;background-color:#cecece;font-size:14px;}
+		.btn{margin-top:10px;height:50px;text-align:center;}
+		.sure,.clear{float:left;padding:5px 20px;cursor:pointer;}
+		.sure{margin-right:10px;background:#099FF6;
+			background:-moz-linear-gradient(top,#099FF6,#B6E3F6);
+			background:-o-linear-gradient(top,#099FF6,#B6E3F6);
+			background:-webkit-linear-gradient(top,#099FF6,#B6E3F6);
+		}
+		.clear{background:#cecece;
+			background:-moz-linear-gradient(top,#cecece,#fbfbfb,#EEEEEE);
+			background:-o-linear-gradient(top,#cecece,#fbfbfb,#EEEEEE);
+			background:-webkit-linear-gradient(top,#cecece,#fbfbfb,#EEEEEE);
+		}
+		#message-text li{position:relative;margin-bottom:15px;padding:20px;color:#fff;font-size:14px;
+			border-radius:3px;-moz-border-radius:3px;-webkit-border-radius:3px;-o-border-radius:3px;
+			counter-increment:index;
+			-moz-transition:all 0.7s ease 0s;
+			-o-transition:all 0.7s ease 0s;
+			-webkit-transition:all 0.7s ease 0s;
+
+		}
+		.message-box li span{position:absolute;top:3px;right:5px;cursor:pointer;}
+		#message-text li:before{position:absolute;padding:0 10px;height:20px;line-height:20px;left:-5px;top:-5px;background:red;color:#fff;font-size:12px;text-align:center;
+			content:counter(index);
+			border-radius:50%;
+			-moz-border-radius:20px 30px 10px 20px;
+			-moz-transition:all 0.7s ease 0s;
+		}
+		#message-text li:hover:before{background:#25AAF6;
+						-moz-border-radius:50%;
+						-moz-transition:all 0.7s ease 0s;
+		}
+		.message-box li:nth-child(odd){background-color:#B28C3F;}
+		.message-box li:nth-child(even){background-color:#BBC889;}
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<h1 id='sp' class='rad2'>HTML5简单留言板</h1>
+		<div class="textarea-box">
+			<h2 class='rad2'>添加留言：</h2>
+			<textarea name="message" id="message"  class='rad2'></textarea>
+			<div class="btn"><div class="sure rad2">提交</div><div class="clear rad2">清空全部留言</div></div>
+		</div>
+		<div class="message-box">
+			<h2 class='rad2'>您的留言：</h2>
+			<ul id='message-text'></ul>
+		</div>
+	</div>
+	<script type="text/javascript">
+	 	function localStorageMessage(){//构造函数
+	 		this.getMessage(); 
+	 		this.deleteOne();	
+	 	}
+	 	localStorageMessage.prototype={
+	 		addMessage:function(){//添加留言功能
+	 			var key=+new Date+'-'+Math.random().toString().substr(3,5);//取得时间点加一个随机五位数为KEY;
+	 			var message=document.getElementById('message');
+	 			if(!!message.value){
+	 				localStorage.setItem(key,message.value);//设置localStorage
+	 				this.getMessage();//刷新留言板
+	 				this.deleteOne();//删除单个留言功能
+	 				message.value='';
+	 				message.focus();
+
+	 			}else{
+	 				alert('请输入内容')
+	 			}
+	 		},
+	 		getMessage:function(){//刷新留言板
+	 			var n=localStorage.length;
+	 			var text='';
+	 			var message=document.getElementById('message-text');
+	 			var data;
+	 			if(n>0){
+	 				for(var i=0;i<n;i++){
+		 				data=localStorage.getItem(localStorage.key(i));
+		 				text+='<li '+'message-data='+localStorage.key(i)+'>'+data+'</li>';
+		 				//给每条留言加一个属性，属性值为localStorage.key(i)
+	 				}
+	 				message.innerHTML=text;
+	 			}else{
+	 				message.innerHTML=''
+	 			}
+	 		},
+	 		deleteAll:function(){//删除所有留言
+	 			localStorage.clear();
+	 			this.getMessage();
+	 		},
+	 		deleteOne:function(){//删除单个留言功能
+	 			var li=document.querySelectorAll('.message-box li');
+		 			for(var i=0;i<li.length;i++){
+		 				var span=document.createElement('span');
+		 				span.innerHTML='删除';
+		 				li[i].appendChild(span);
+		 				span.style.display='none';
+						li[i].onmouseover=function(){
+							this.getElementsByTagName('span')[0].style.display='block';
+						}
+						li[i].onmouseout=function(){
+							this.getElementsByTagName('span')[0].style.display='none';
+						}
+						span.onclick=function(){
+							this.parentNode.parentNode.removeChild(this.parentNode);
+							localStorage.removeItem(this.parentNode.getAttribute('message-data'));
+						}
+		 			}
+	 		}
+	 	};
+	 	if(!!window.localStorage){
+	 		var k=new localStorageMessage();
+	 		document.getElementsByClassName('sure')[0].onclick=function(){
+	 			k.addMessage();
+	 		};
+	 		document.getElementsByClassName('clear')[0].onclick=function(){
+	 			k.deleteAll();
+	 		}
+	 	}else{
+	 		document.getElementById('sp').innerHTML='您的游览器不支持，请升级！';
+	 	}
+	</script>
+</body>
+</html>
+
